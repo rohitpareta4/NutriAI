@@ -10,6 +10,8 @@ const Scan = () => {
   const [isopen,setIsopen]=useState(false)
   const [Result,setResult]=useState(null)
   const [upload,setUpload]=useState(null)
+  const [img,setIMG]=useState(null)
+  const [nutridata,setNutriData]=useState(null)
 
   const scannow=()=>{
     setIsopen(true)
@@ -23,8 +25,7 @@ const Scan = () => {
     console.log("................result",Result)
   }
 
-
-  const decodeBarcode = async (file) => {
+   const decodeBarcode = async (file) => {
   const reader = new FileReader();
   reader.onload = async (e) => {
     const img = new Image();
@@ -33,18 +34,19 @@ const Scan = () => {
       const codeReader = new BrowserMultiFormatReader();
       try {
         const result = await codeReader.decodeFromImageElement(img);
-       const res=await axios.get(`https://world.openfoodfacts.org/api/v0/product/${result.getText}.json`)
-       console.log("Status Verbose:", res.data.status_verbose);
-
-       if(res.data.status===0){
-        const res1=await axios.get(`https://world.openbeautyfacts.org/api/v0/product/${result.getText}.json`)
-        console.log("????????????????????????",res1.data)
-       }else{
-        console.log("????????????????????????",res.data)
-       }
-
+        const bari=result.getText()
+      //  const res=await axios.get(`https://world.openfoodfacts.org/api/v0/product/${bari}.json`)
+      //  console.log("Status Verbose:", res.data);
        
+
+       const res1=await axios.get(`https://world.openbeautyfacts.org/api/v0/product/${bari}.json`)
+       console.log("res1...............",res1.data)
+       setIMG(res1.data.product.image_url)
+       setNutriData(res1.data.product.no_nutrition_data)
+       console.log(res1.data.product.no_nutrition_data)
+
         console.log("Barcode:", result.getText());
+      
       } catch (err) {
         console.error("No barcode found", err);
       }
@@ -52,6 +54,10 @@ const Scan = () => {
   };
   reader.readAsDataURL(file);
 };
+
+
+
+
 
   return (
     <div className="bg-gradient-to-r from-pink-200 via-red-200 to-yellow-200 border-4 border-black  shadow-xl my-8 mx-8 flex flex-col md:flex-row justify-center items-center p-8 gap-6">
@@ -73,6 +79,8 @@ const Scan = () => {
 
         {/* Upload Button */}
         <div className="flex justify-center items-center">
+          <img src={img}/>
+          <div className='text-black'>{nutridata?'show':'nutrition data is not available'}</div>
           <label 
             htmlFor="fileUpload" 
             className="cursor-pointer hidden md:block bg-yellow-400 hover:bg-yellow-500 active:bg-yellow-600 text-black font-bold px-6 py-3 rounded-full flex items-center gap-2 shadow-lg transition-all"
